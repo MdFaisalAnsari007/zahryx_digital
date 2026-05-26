@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { ArrowUpRight, ExternalLink, TrendingUp } from 'lucide-react';
+import { Api } from '../../lib/api';
 
 interface Project {
-  id: number;
+  id: number | string;
   title: string;
   category: string;
   client: string;
@@ -15,6 +16,7 @@ interface Project {
   image: string;
   accent: string;
   accentBg: string;
+  projectUrl?: string;
 }
 
 const PROJECTS: Project[] = [
@@ -131,14 +133,49 @@ const cardVariants = {
 
 export default function Portfolio() {
   const [activeCategory, setActiveCategory] = useState('All');
-  const [hovered, setHovered] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | string | null>(null);
+  const [projectsList, setProjectsList] = useState<Project[]>(PROJECTS);
+  const [loading, setLoading] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef, { once: true, amount: 0.1 });
 
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const res = await Api.get('/projects');
+        if (res.success && res.data && res.data.length > 0) {
+          const mapped = res.data.map((p: any) => ({
+            id: p._id,
+            title: p.title,
+            category: p.category,
+            client: p.client,
+            growth: p.growth || 'Results Delivered',
+            description: p.description,
+            tags: p.tags || [],
+            image: p.coverImage,
+            accent: p.accent || '#2563EB',
+            accentBg: p.accentBg || 'rgba(37,99,235,0.1)',
+            projectUrl: p.projectUrl || undefined,
+          }));
+          setProjectsList(mapped);
+        } else {
+          // If database is empty, fallback to mock list
+          setProjectsList(PROJECTS);
+        }
+      } catch (error) {
+        console.warn('Could not load projects from API, falling back to static projects:', error);
+        setProjectsList(PROJECTS);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProjects();
+  }, []);
+
   const filtered =
     activeCategory === 'All'
-      ? PROJECTS
-      : PROJECTS.filter((p) => p.category === activeCategory);
+      ? projectsList
+      : projectsList.filter((p) => p.category === activeCategory);
 
   return (
     <section id="portfolio" className="py-28 px-6 bg-white relative overflow-hidden" ref={sectionRef}>
@@ -250,8 +287,11 @@ export default function Portfolio() {
                     {project.category}
                   </span>
 
-                  {/* Arrow icon on hover */}
-                  <motion.div
+                  {/* Arrow icon on hover — links to project URL */}
+                  <motion.a
+                    href={project.projectUrl || '#contact'}
+                    target={project.projectUrl ? '_blank' : '_self'}
+                    rel="noopener noreferrer"
                     initial={{ opacity: 0, scale: 0.7 }}
                     animate={
                       hovered === project.id
@@ -262,7 +302,7 @@ export default function Portfolio() {
                     className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-lg"
                   >
                     <ArrowUpRight className="w-4 h-4 text-neutral-dark" />
-                  </motion.div>
+                  </motion.a>
 
                   {/* Growth pill at bottom of image */}
                   <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg">
@@ -298,13 +338,27 @@ export default function Portfolio() {
                   {/* Footer */}
                   <div className="flex items-center justify-between pt-4 border-t border-neutral-border mt-1">
                     <span className="text-xs text-neutral-dark/40 font-medium">{project.client}</span>
-                    <motion.button
-                      whileHover={{ x: 3 }}
-                      className="flex items-center gap-1.5 text-xs font-bold text-primary hover:underline underline-offset-2"
-                    >
-                      View Case Study
-                      <ExternalLink className="w-3 h-3" />
-                    </motion.button>
+                    {project.projectUrl ? (
+                      <motion.a
+                        href={project.projectUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ x: 3 }}
+                        className="flex items-center gap-1.5 text-xs font-bold text-primary hover:underline underline-offset-2"
+                      >
+                        Visit Site
+                        <ExternalLink className="w-3 h-3" />
+                      </motion.a>
+                    ) : (
+                      <motion.a
+                        href="#contact"
+                        whileHover={{ x: 3 }}
+                        className="flex items-center gap-1.5 text-xs font-bold text-primary/40 cursor-default"
+                      >
+                        Coming Soon
+                        <ExternalLink className="w-3 h-3" />
+                      </motion.a>
+                    )}
                   </div>
                 </div>
               </motion.div>

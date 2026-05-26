@@ -36,6 +36,14 @@ interface Project {
   title: string;
   category: string;
   client: string;
+  description?: string;
+  growth?: string;
+  coverImage?: string;
+  accent?: string;
+  accentBg?: string;
+  projectUrl?: string;
+  tags?: string[];
+  featured?: boolean;
 }
 
 export default function AdminDashboard() {
@@ -54,6 +62,21 @@ export default function AdminDashboard() {
   const [newBlogCategory, setNewBlogCategory] = useState('Local SEO');
   const [newBlogExcerpt, setNewBlogExcerpt] = useState('');
   const [newBlogContent, setNewBlogContent] = useState('');
+
+  // Form states for creating projects
+  const [newProjTitle, setNewProjTitle] = useState('');
+  const [newProjClient, setNewProjClient] = useState('');
+  const [newProjCategory, setNewProjCategory] = useState('Gym & Fitness');
+  const [newProjGrowth, setNewProjGrowth] = useState('+100% Growth');
+  const [newProjDescription, setNewProjDescription] = useState('');
+  const [newProjTags, setNewProjTags] = useState(''); // comma-separated
+  const [newProjUrl, setNewProjUrl] = useState('');
+  const [newProjAccent, setNewProjAccent] = useState('#2563EB');
+  const [newProjFeatured, setNewProjFeatured] = useState(false);
+  const [newProjCoverImage, setNewProjCoverImage] = useState('');
+  
+  // Upload UI state
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Fallback Mocks
   const mockInquiries: Inquiry[] = [
@@ -186,6 +209,101 @@ export default function AdminDashboard() {
     setNewBlogContent('');
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const res = await Api.uploadFile(file);
+      if (res.success && res.url) {
+        setNewProjCoverImage(res.url);
+      } else {
+        alert('Upload failed: ' + ((res as any).error || 'Server error'));
+      }
+    } catch (error: any) {
+      alert('Upload error: ' + error.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleAddProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProjCoverImage) {
+      alert('Please upload a cover image first.');
+      return;
+    }
+
+    const tagsArray = newProjTags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+
+    // Compute dynamic translucent accent background
+    let computedAccentBg = 'rgba(37,99,235,0.1)';
+    if (newProjAccent.startsWith('#')) {
+      const hex = newProjAccent.substring(1);
+      if (hex.length === 6) {
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        computedAccentBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
+      }
+    }
+
+    const projectData = {
+      title: newProjTitle,
+      client: newProjClient,
+      category: newProjCategory,
+      growth: newProjGrowth,
+      description: newProjDescription,
+      tags: tagsArray,
+      coverImage: newProjCoverImage,
+      projectUrl: newProjUrl || undefined,
+      accent: newProjAccent,
+      accentBg: computedAccentBg,
+      featured: newProjFeatured,
+    };
+
+    try {
+      const res = await Api.post('/projects', projectData);
+      if (res.success) {
+        setProjects(prev => [res.data, ...prev]);
+        
+        // Reset form states
+        setNewProjTitle('');
+        setNewProjClient('');
+        setNewProjCategory('Gym & Fitness');
+        setNewProjGrowth('+100% Growth');
+        setNewProjDescription('');
+        setNewProjTags('');
+        setNewProjUrl('');
+        setNewProjAccent('#2563EB');
+        setNewProjFeatured(false);
+        setNewProjCoverImage('');
+      } else {
+        alert('Failed to save project: ' + (res.error || 'Unknown error.'));
+      }
+    } catch (error: any) {
+      alert('Error creating project: ' + error.message);
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this case study?')) return;
+    try {
+      const res = await Api.delete(`/projects/${id}`);
+      if (res.success) {
+        setProjects(prev => prev.filter(p => p._id !== id));
+      } else {
+        alert('Failed to delete project: ' + (res.error || 'Server error'));
+      }
+    } catch (error: any) {
+      alert('Error deleting project: ' + error.message);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('zahryx_admin_token');
     localStorage.removeItem('zahryx_admin_name');
@@ -283,6 +401,14 @@ export default function AdminDashboard() {
             }`}
           >
             Manage Blog Posts ({blogs.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('projects')}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
+              activeTab === 'projects' ? 'bg-neutral-dark text-white shadow-sm' : 'bg-white text-neutral-dark/70 hover:bg-neutral-border/10'
+            }`}
+          >
+            Manage Projects ({projects.length})
           </button>
         </div>
 
@@ -455,6 +581,263 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* TABS 3: Projects */}
+            {activeTab === 'projects' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-fadeIn">
+                {/* Left side: Creation Form */}
+                <div className="lg:col-span-5 bg-white border border-neutral-border rounded-3xl p-6 sm:p-8 shadow-premium self-start">
+                  <h3 className="font-display font-bold text-lg text-neutral-dark mb-6 flex items-center gap-2">
+                    <Plus className="w-5 h-5 text-primary" />
+                    Add Portfolio Project
+                  </h3>
+
+                  <form onSubmit={handleAddProject} className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Project Title</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Pulse Gym Redesign"
+                        value={newProjTitle}
+                        onChange={(e) => setNewProjTitle(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-border text-sm text-neutral-dark focus:outline-none focus:border-primary transition-colors"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Client</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Pulse Fitness"
+                          value={newProjClient}
+                          onChange={(e) => setNewProjClient(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-neutral-border text-sm text-neutral-dark focus:outline-none focus:border-primary transition-colors"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Category</label>
+                        <select
+                          value={newProjCategory}
+                          onChange={(e) => setNewProjCategory(e.target.value)}
+                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-border text-sm text-neutral-dark focus:outline-none focus:border-primary transition-colors"
+                        >
+                          <option>Gym & Fitness</option>
+                          <option>Cafes & Restaurants</option>
+                          <option>Beauty & Wellness</option>
+                          <option>Retail & E-commerce</option>
+                          <option>Healthcare</option>
+                          <option>Education</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Growth Stat</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. +140% Bookings"
+                          value={newProjGrowth}
+                          onChange={(e) => setNewProjGrowth(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-neutral-border text-sm text-neutral-dark focus:outline-none focus:border-primary transition-colors"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Accent Color</label>
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="color"
+                            value={newProjAccent}
+                            onChange={(e) => setNewProjAccent(e.target.value)}
+                            className="w-10 h-10 border border-neutral-border rounded-xl cursor-pointer bg-transparent"
+                          />
+                          <input
+                            type="text"
+                            required
+                            placeholder="#2563EB"
+                            value={newProjAccent}
+                            onChange={(e) => setNewProjAccent(e.target.value)}
+                            className="w-full px-3 py-2.5 rounded-xl border border-neutral-border text-xs text-neutral-dark focus:outline-none focus:border-primary transition-colors"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Tags (comma separated)</label>
+                      <input
+                        type="text"
+                        placeholder="Next.js, UI/UX, Performance"
+                        value={newProjTags}
+                        onChange={(e) => setNewProjTags(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-border text-sm text-neutral-dark focus:outline-none focus:border-primary transition-colors"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Case Study Description</label>
+                      <textarea
+                        rows={3}
+                        required
+                        placeholder="Describe the challenges solved, the tech stack chosen, and how this led to high conversions..."
+                        value={newProjDescription}
+                        onChange={(e) => setNewProjDescription(e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-neutral-border text-sm text-neutral-dark focus:outline-none focus:border-primary transition-colors resize-none"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Project URL (optional)</label>
+                      <input
+                        type="url"
+                        placeholder="https://example.com"
+                        value={newProjUrl}
+                        onChange={(e) => setNewProjUrl(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-border text-sm text-neutral-dark focus:outline-none focus:border-primary transition-colors"
+                      />
+                    </div>
+
+                    {/* Image Upload Component */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold text-neutral-dark/50 uppercase tracking-wide">Cover Image</label>
+                      
+                      {newProjCoverImage ? (
+                        <div className="relative rounded-2xl overflow-hidden border border-neutral-border group aspect-[16/9]">
+                          <img
+                            src={newProjCoverImage}
+                            alt="Project Cover Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setNewProjCoverImage('')}
+                              className="px-3 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                            >
+                              Remove Image
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border-2 border-dashed border-neutral-border hover:border-primary/50 transition-colors rounded-2xl p-6 text-center flex flex-col items-center justify-center gap-2 bg-neutral-soft/30 min-h-[140px] relative">
+                          {uploadingImage ? (
+                            <div className="flex flex-col items-center gap-2">
+                              <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+                              <span className="text-xs font-bold text-neutral-dark/60">Uploading to Cloudinary...</span>
+                            </div>
+                          ) : (
+                            <>
+                              <Layers className="w-8 h-8 text-neutral-dark/30" />
+                              <div className="text-xs font-bold text-neutral-dark">
+                                Drag image here or <span className="text-primary underline cursor-pointer hover:text-primary-light">browse</span>
+                              </div>
+                              <div className="text-[10px] text-neutral-dark/40 font-semibold">Supports JPG, PNG or WEBP (Max 10MB)</div>
+                            </>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={uploadingImage}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-2">
+                      <input
+                        type="checkbox"
+                        id="featuredProj"
+                        checked={newProjFeatured}
+                        onChange={(e) => setNewProjFeatured(e.target.checked)}
+                        className="w-4 h-4 rounded text-primary border-neutral-border focus:ring-primary"
+                      />
+                      <label htmlFor="featuredProj" className="text-xs font-bold text-neutral-dark select-none cursor-pointer">
+                        Feature this project on landing page
+                      </label>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={uploadingImage || !newProjCoverImage}
+                      className={`py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer ${
+                        uploadingImage || !newProjCoverImage
+                          ? 'bg-neutral-border text-neutral-dark/40 cursor-not-allowed shadow-none'
+                          : 'bg-primary hover:bg-primary-light text-white'
+                      }`}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Case Study
+                    </button>
+                  </form>
+                </div>
+
+                {/* Right side: Projects List */}
+                <div className="lg:col-span-7 flex flex-col gap-4">
+                  <h3 className="font-display font-bold text-lg text-neutral-dark mb-2">Live Dynamic Case Studies</h3>
+                  
+                  {projects.map(p => (
+                    <div
+                      key={p._id}
+                      className="p-5 bg-white border border-neutral-border rounded-2xl shadow-sm flex gap-4 items-center"
+                    >
+                      <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-neutral-border bg-neutral-soft">
+                        <img
+                          src={p.coverImage || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=150'}
+                          alt={p.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="text-left flex-grow">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-sm text-neutral-dark leading-tight">{p.title}</h4>
+                          {p.featured && (
+                            <span className="text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full shrink-0">
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-semibold text-neutral-dark/40 block mt-1">
+                          Client: {p.client} • Category: {p.category} • Growth: {p.growth}
+                        </span>
+                        <div className="flex gap-1.5 mt-2 flex-wrap">
+                          {p.tags?.map(t => (
+                            <span
+                              key={t}
+                              className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                              style={{
+                                color: p.accent || '#2563EB',
+                                backgroundColor: p.accentBg || 'rgba(37,99,235,0.1)'
+                              }}
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleDeleteProject(p._id)}
+                          className="p-1.5 rounded-lg border border-neutral-border text-rose-500 hover:bg-rose-50 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {projects.length === 0 && (
+                    <div className="py-20 text-center text-xs font-semibold text-neutral-dark/40 border border-dashed border-neutral-border rounded-2xl bg-white">
+                      No dynamic case studies found. Create your first project!
+                    </div>
+                  )}
                 </div>
               </div>
             )}

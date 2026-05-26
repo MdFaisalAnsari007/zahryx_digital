@@ -39,5 +39,8 @@ export const ProjectValidationSchema = z.object({
   beforeImage: z.string().optional(),
   afterImage: z.string().optional(),
   projectUrl: z.string().optional(),
-  featured: z.boolean().optional()
+  featured: z.boolean().optional(),
+  growth: z.string().optional(),
+  accent: z.string().optional(),
+  accentBg: z.string().optional(),
 });

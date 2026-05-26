@@ -51,7 +51,7 @@ export default function AdminLogin() {
       <div className="glow-blob top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary/10" />
 
       <div className="w-full max-w-[420px] relative z-10">
-        
+
         {/* Back navigation */}
         <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-dark/60 hover:text-primary transition-colors mb-6 group">
           <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
@@ -60,14 +60,14 @@ export default function AdminLogin() {
 
         {/* Panel Form */}
         <div className="p-8 sm:p-10 rounded-3xl bg-white border border-neutral-border shadow-premium relative">
-          
+
           <div className="flex flex-col gap-2 mb-8">
             <h1 className="font-display font-bold text-2xl text-neutral-dark">Admin Portal</h1>
             <p className="text-xs text-neutral-dark/50">Authenticate to manage inquiries, portfolios, and blogs.</p>
           </div>
 
           <form onSubmit={handleLogin} className="flex flex-col gap-5">
-            
+
             {error && (
               <div className="p-3.5 rounded-xl bg-red-500/5 border border-red-500/10 text-red-600 text-xs flex items-start gap-2 whitespace-pre-line leading-relaxed">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />

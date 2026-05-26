@@ -113,41 +113,55 @@ export default function Hero() {
             initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             transition={{ duration: 0.8, type: 'spring', bounce: 0.2 }}
-            className="w-full max-w-[400px] h-[340px] rounded-3xl bg-white border border-neutral-border/80 shadow-premium p-6 relative flex flex-col justify-between overflow-hidden"
+            className="w-full max-w-[400px] z-10"
           >
-            {/* Elegant Gradient Mesh Background inside mock */}
-            <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-primary-teal/20 to-primary/5 rounded-full blur-2xl pointer-events-none" />
+            <motion.div
+              animate={{
+                y: [0, -6, 0],
+                rotate: [0, -0.5, 0]
+              }}
+              transition={{
+                duration: 10,
+                ease: 'easeInOut',
+                repeat: Infinity,
+                repeatType: 'reverse'
+              }}
+              className="w-full h-[340px] rounded-3xl bg-white border border-neutral-border/80 shadow-premium p-6 relative flex flex-col justify-between overflow-hidden"
+            >
+              {/* Elegant Gradient Mesh Background inside mock */}
+              <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-primary-teal/20 to-primary/5 rounded-full blur-2xl pointer-events-none" />
 
-            <div className="flex justify-between items-center relative z-10">
-              <div className="flex gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-red-400/80" />
-                <span className="w-3 h-3 rounded-full bg-yellow-400/80" />
-                <span className="w-3 h-3 rounded-full bg-green-400/80" />
-              </div>
-              <span className="text-[10px] font-semibold tracking-wider text-neutral-dark/40 uppercase">zahryx.digital</span>
-            </div>
-
-            <div className="my-auto text-left py-4 relative z-10">
-              <h3 className="font-display font-bold text-2xl text-neutral-dark leading-snug">
-                Helping local business owners attract high-paying clients.
-              </h3>
-              <p className="text-xs text-neutral-dark/50 mt-2 leading-relaxed">
-                Elegant design combined with dynamic booking, fast ecommerce, and solid SEO engines.
-              </p>
-            </div>
-
-            <div className="h-[2px] bg-neutral-border/40 relative z-10" />
-
-            <div className="flex justify-between items-center mt-3 relative z-10">
-              <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">🚀</span>
-                <div>
-                  <h4 className="text-xs font-bold text-neutral-dark">Conversion Engine</h4>
-                  <p className="text-[10px] text-neutral-dark/40">Optimized for small businesses</p>
+              <div className="flex justify-between items-center relative z-10">
+                <div className="flex gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-red-400/80" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-400/80" />
+                  <span className="w-3 h-3 rounded-full bg-green-400/80" />
                 </div>
+                <span className="text-[10px] font-semibold tracking-wider text-neutral-dark/40 uppercase">zahryx.digital</span>
               </div>
-              <span className="text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">Active</span>
-            </div>
+
+              <div className="my-auto text-left py-4 relative z-10">
+                <h3 className="font-display font-bold text-2xl text-neutral-dark leading-snug">
+                  Helping local business owners attract high-paying clients.
+                </h3>
+                <p className="text-xs text-neutral-dark/50 mt-2 leading-relaxed">
+                  Elegant design combined with dynamic booking, fast ecommerce, and solid SEO engines.
+                </p>
+              </div>
+
+              <div className="h-[2px] bg-neutral-border/40 relative z-10" />
+
+              <div className="flex justify-between items-center mt-3 relative z-10">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">🚀</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-neutral-dark">Conversion Engine</h4>
+                    <p className="text-[10px] text-neutral-dark/40">Optimized for small businesses</p>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">Active</span>
+              </div>
+            </motion.div>
           </motion.div>
 
           {/* Floating UI Elements */}
@@ -157,15 +171,29 @@ export default function Hero() {
             initial={{ opacity: 0, x: 40, y: -40 }}
             animate={{ opacity: 1, x: 20, y: -80 }}
             transition={{ delay: 0.4, duration: 0.6, type: 'spring' }}
-            className="absolute top-20 right-0 sm:right-6 glass-panel shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-white max-w-[210px] animate-float-slow"
+            className="absolute top-20 right-0 sm:right-6 z-20"
           >
-            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-medium text-neutral-dark/50">Pulse Gym Bookings</p>
-              <h4 className="text-sm font-bold text-neutral-dark">+140% Members</h4>
-            </div>
+            <motion.div
+              animate={{
+                y: [0, -12, 0],
+                rotate: [0, 1.5, 0]
+              }}
+              transition={{
+                duration: 6,
+                ease: 'easeInOut',
+                repeat: Infinity,
+                repeatType: 'reverse'
+              }}
+              className="glass-panel shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-white max-w-[210px]"
+            >
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-medium text-neutral-dark/50">Pulse Gym Bookings</p>
+                <h4 className="text-sm font-bold text-neutral-dark">+140% Members</h4>
+              </div>
+            </motion.div>
           </motion.div>
 
           {/* Card 2: Restaurant Reservation Notification */}
@@ -173,27 +201,56 @@ export default function Hero() {
             initial={{ opacity: 0, x: -50, y: 50 }}
             animate={{ opacity: 1, x: -30, y: 80 }}
             transition={{ delay: 0.6, duration: 0.6, type: 'spring' }}
-            className="absolute bottom-20 left-0 sm:left-6 glass-panel shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-white max-w-[220px]"
-            style={{ animation: 'floatSlow 6s ease-in-out infinite 2s' }}
+            className="absolute bottom-20 left-0 sm:left-6 z-20"
           >
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Calendar className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-medium text-neutral-dark/50">Bella Italia Reservations</p>
-              <h4 className="text-sm font-bold text-neutral-dark">New Table Booked!</h4>
-            </div>
+            <motion.div
+              animate={{
+                y: [0, 12, 0],
+                rotate: [0, -1.5, 0]
+              }}
+              transition={{
+                duration: 7,
+                ease: 'easeInOut',
+                repeat: Infinity,
+                repeatType: 'reverse',
+                delay: 1
+              }}
+              className="glass-panel shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-white max-w-[220px]"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-medium text-neutral-dark/50">Bella Italia Reservations</p>
+                <h4 className="text-sm font-bold text-neutral-dark">New Table Booked!</h4>
+              </div>
+            </motion.div>
           </motion.div>
 
           {/* Card 3: Mehendi Artist review */}
           <motion.div
-            initial={{ opacity: 0, y: 80 }}
-            animate={{ opacity: 1, y: 140 }}
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 30 }}
             transition={{ delay: 0.8, duration: 0.6, type: 'spring' }}
-            className="absolute bottom-10 right-4 glass-panel shadow-lg rounded-xl p-3 flex items-center gap-2 border border-white max-w-[160px]"
+            className="absolute bottom-10 right-4 z-20"
           >
-            <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-            <span className="text-xs font-semibold text-neutral-dark">"Stunning Portfolio!"</span>
+            <motion.div
+              animate={{
+                y: [0, -8, 0],
+                rotate: [0, 1, 0]
+              }}
+              transition={{
+                duration: 5,
+                ease: 'easeInOut',
+                repeat: Infinity,
+                repeatType: 'reverse',
+                delay: 0.5
+              }}
+              className="glass-panel shadow-lg rounded-xl p-3 flex items-center gap-2 border border-white max-w-[160px]"
+            >
+              <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+              <span className="text-xs font-semibold text-neutral-dark">"Stunning Portfolio!"</span>
+            </motion.div>
           </motion.div>
 
         </div>

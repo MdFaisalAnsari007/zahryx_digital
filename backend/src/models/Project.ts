@@ -11,6 +11,9 @@ const ProjectSchema = new Schema({
   afterImage: { type: String }, // optional, for before/after view
   projectUrl: { type: String },
   featured: { type: Boolean, default: false },
+  growth: { type: String, default: 'Project Delivered' },
+  accent: { type: String, default: '#2563EB' },
+  accentBg: { type: String, default: 'rgba(37,99,235,0.1)' },
 }, { timestamps: true });
 
 export const Project = model('Project', ProjectSchema);
